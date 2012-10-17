@@ -27,6 +27,8 @@ import org.elasticsearch.indices.analysis.IcuIndicesAnalysisModule;
 import org.elasticsearch.plugins.AbstractPlugin;
 
 import java.util.Collection;
+import org.elasticsearch.search.facet.FacetModule;
+import org.elasticsearch.search.facet.icu.ICUTermsFacetProcessor;
 
 /**
  *
@@ -54,4 +56,9 @@ public class AnalysisICUPlugin extends AbstractPlugin {
     public void onModule(AnalysisModule module) {
         module.addProcessor(new IcuAnalysisBinderProcessor());
     }
+    
+    public void onModule(FacetModule facetModule) {
+        facetModule.addFacetProcessor(ICUTermsFacetProcessor.class);
+    }
+    
 }
