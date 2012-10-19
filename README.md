@@ -148,6 +148,69 @@ Breaks text into words according to UAX #29: Unicode Text Segmentation ((http://
         }
     }
 
+ICU Facets
+----------
+
+The ICU terms facet allows to sort by an ICU locale setting. 
+
+Be aware, the order of the attributes is sensitive, first the attribute "locale" needs to be declared, followed by the attribute "collator". The "collator" may have one of the values "term", "reverse\_term", or (for convenience) "count" and "reverse\_count".
+
+For example, this facet sorts a name field by german phonebook order (DIN 5007-2).
+
+    {
+    	"facets" : {
+    		"facet1" : {
+    			"icu" : {
+    				"locale" : "de@collation=phonebook",
+    				"collator" : "term",
+    				"field" : "name"
+    			}
+    		}
+    	}
+    }
+	
+The result looks like
+
+    {
+      "took" : 241,
+      "timed_out" : false,
+      "_shards" : {
+        "total" : 1,
+        "successful" : 1,
+        "failed" : 0
+      },
+      "hits" : {
+        "total" : 5,
+        "max_score" : 1.0,
+        "hits" : [...]
+      },
+          "facets" : {
+            "facet1" : {
+              "_type" : "icu",
+              "missing" : 0,
+              "total" : 5,
+              "other" : 0,
+              "terms" : [ {
+                "term" : "göbel",
+                "count" : 1
+              }, {
+                "term" : "goethe",
+                "count" : 1
+              }, {
+                "term" : "göthe",
+                    "count" : 1
+              }, {
+                "term" : "götz",
+                "count" : 1
+              }, {
+                "term" : "goldmann",
+                "count" : 1
+              } ]
+            }
+          }
+        }
+	}
+
 
 License
 -------
