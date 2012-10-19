@@ -17,25 +17,30 @@
  * under the License.
  */
 
-package org.elasticsearch.search.facet.terms.strings.icu;
+package org.elasticsearch.search.facet.terms.comparator.icu;
 
-import org.apache.lucene.util.PriorityQueue;
-import org.elasticsearch.search.facet.icu.TermsFacet;
-import org.elasticsearch.search.facet.terms.comparator.icu.TermsFacetComparator;
+import com.ibm.icu.util.ULocale;
+import org.elasticsearch.search.facet.icu.TermsFacet.Entry;
 
-public class EntryPriorityQueue extends PriorityQueue<TermsFacet.Entry> {
+import java.util.Comparator;
 
-    public static final int LIMIT = 5000;
-
-    private final TermsFacetComparator comparator;
-
-    public EntryPriorityQueue(int size, TermsFacetComparator comparator) {
-        initialize(size);
-        this.comparator = comparator;
-    }
-
-    @Override
-    protected boolean lessThan(TermsFacet.Entry a, TermsFacet.Entry b) {
-        return comparator.compare(a, b) > 0; // reverse, since we reverse again when adding to a list
-    }
+/**
+ * A terms facet comparator interface that provides collation attributes
+ * 
+ * @author joerg
+ */
+public interface TermsFacetComparator extends Comparator<Entry>{
+    
+    String getType();
+    
+    boolean getReverse();
+    
+    ULocale getLocale();
+    
+    String getRules();
+    
+    int getDecomposition();
+    
+    int getStrength();
+    
 }

@@ -35,12 +35,11 @@ import org.elasticsearch.script.SearchScript;
 import org.elasticsearch.search.facet.AbstractFacetCollector;
 import org.elasticsearch.search.facet.Facet;
 import org.elasticsearch.search.facet.FacetPhaseExecutionException;
+import org.elasticsearch.search.facet.terms.comparator.icu.TermsFacetComparator;
 import org.elasticsearch.search.internal.SearchContext;
-import org.elasticsearch.search.facet.icu.ICUTermsFacet.Entry;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,9 +53,7 @@ public class FieldsTermsStringFacetCollector extends AbstractFacetCollector {
 
     private final String[] indexFieldsNames;
 
-    private final String locale;
-    
-    private final Comparator<Entry> comparator;
+    private final TermsFacetComparator comparator;
 
     private final int size;
 
@@ -70,12 +67,11 @@ public class FieldsTermsStringFacetCollector extends AbstractFacetCollector {
 
     private final SearchScript script;
 
-    public FieldsTermsStringFacetCollector(String facetName, String[] fieldsNames, int size, String locale, Comparator<Entry> comparator, boolean allTerms, SearchContext context,
+    public FieldsTermsStringFacetCollector(String facetName, String[] fieldsNames, int size, TermsFacetComparator comparator, boolean allTerms, SearchContext context,
                                            ImmutableSet<String> excluded, Pattern pattern, String scriptLang, String script, Map<String, Object> params) {
         super(facetName);
         this.fieldDataCache = context.fieldDataCache();
         this.size = size;
-        this.locale = locale;
         this.comparator = comparator;
         this.numberOfShards = context.numberOfShards();
 
@@ -150,7 +146,7 @@ public class FieldsTermsStringFacetCollector extends AbstractFacetCollector {
         TObjectIntHashMap<String> facets = aggregator.facets();
         if (facets.isEmpty()) {
             CacheRecycler.pushObjectIntMap(facets);
-            return new InternalStringTermsFacet(facetName, locale, comparator, size, ImmutableList.<InternalStringTermsFacet.StringEntry>of(), aggregator.missing(), aggregator.total());
+            return new InternalStringTermsFacet(facetName, comparator, size, ImmutableList.<InternalStringTermsFacet.StringEntry>of(), aggregator.missing(), aggregator.total());
         } else {
             if (size < EntryPriorityQueue.LIMIT) {
                 EntryPriorityQueue ordered = new EntryPriorityQueue(size, comparator);
@@ -163,7 +159,7 @@ public class FieldsTermsStringFacetCollector extends AbstractFacetCollector {
                     list[i] = ((InternalStringTermsFacet.StringEntry) ordered.pop());
                 }
                 CacheRecycler.pushObjectIntMap(facets);
-                return new InternalStringTermsFacet(facetName, locale, comparator, size, Arrays.asList(list), aggregator.missing(), aggregator.total());
+                return new InternalStringTermsFacet(facetName, comparator, size, Arrays.asList(list), aggregator.missing(), aggregator.total());
             } else {
                 BoundedTreeSet<InternalStringTermsFacet.StringEntry> ordered = new BoundedTreeSet<InternalStringTermsFacet.StringEntry>(comparator, size);
                 for (TObjectIntIterator<String> it = facets.iterator(); it.hasNext(); ) {
@@ -171,7 +167,7 @@ public class FieldsTermsStringFacetCollector extends AbstractFacetCollector {
                     ordered.add(new InternalStringTermsFacet.StringEntry(it.key(), it.value()));
                 }
                 CacheRecycler.pushObjectIntMap(facets);
-                return new InternalStringTermsFacet(facetName, locale, comparator, size, ordered, aggregator.missing(), aggregator.total());
+                return new InternalStringTermsFacet(facetName, comparator, size, ordered, aggregator.missing(), aggregator.total());
             }
         }
     }

@@ -27,7 +27,7 @@ import org.elasticsearch.search.facet.Facet;
  *
  *
  */
-public interface ICUTermsFacet extends Facet, Iterable<ICUTermsFacet.Entry> {
+public interface TermsFacet extends Facet, Iterable<TermsFacet.Entry> {
 
     /**
      * The type of the filter facet.
@@ -78,10 +78,10 @@ public interface ICUTermsFacet extends Facet, Iterable<ICUTermsFacet.Entry> {
     /**
      * The terms and counts.
      */
-    List<? extends ICUTermsFacet.Entry> entries();
+    List<? extends TermsFacet.Entry> entries();
 
     /**
      * The terms and counts.
      */
-    List<? extends ICUTermsFacet.Entry> getEntries();
+    List<? extends TermsFacet.Entry> getEntries();
 }

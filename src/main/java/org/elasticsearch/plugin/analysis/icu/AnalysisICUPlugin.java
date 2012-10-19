@@ -28,7 +28,7 @@ import org.elasticsearch.plugins.AbstractPlugin;
 
 import java.util.Collection;
 import org.elasticsearch.search.facet.FacetModule;
-import org.elasticsearch.search.facet.icu.ICUTermsFacetProcessor;
+import org.elasticsearch.search.facet.icu.TermsFacetProcessor;
 
 /**
  *
@@ -58,7 +58,7 @@ public class AnalysisICUPlugin extends AbstractPlugin {
     }
     
     public void onModule(FacetModule facetModule) {
-        facetModule.addFacetProcessor(ICUTermsFacetProcessor.class);
+        facetModule.addFacetProcessor(TermsFacetProcessor.class);
     }
     
 }

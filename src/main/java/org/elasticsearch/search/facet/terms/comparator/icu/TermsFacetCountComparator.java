@@ -16,24 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.elasticsearch.search.facet.icu;
 
-import com.ibm.icu.util.ULocale;
-import org.elasticsearch.search.facet.icu.ICUTermsFacet.Entry;
+package org.elasticsearch.search.facet.terms.comparator.icu;
 
-public class ICUTermsFacetReverseComparator extends ICUTermsFacetComparator {
- 
-    public ICUTermsFacetReverseComparator(String type, String locale) {
-        this(type, new ULocale(locale));
+import org.elasticsearch.search.facet.icu.TermsFacet.Entry;
+
+/**
+ * A comparator for terms facet counts
+ */
+public class TermsFacetCountComparator extends AbstractTermsFacetComparator {
+
+    public TermsFacetCountComparator(String type, boolean reverse) {
+        super(type, reverse);
     }
-
-    public ICUTermsFacetReverseComparator(String type, ULocale locale) {
-        super(type, locale);
-    }
-
+    
     @Override
-    public int compare(Entry t0, Entry t1) {
-        return -super.compare(t0, t1);
+    public int compare(Entry o1, Entry o2) {
+        int i = o2.count() - o1.count();
+        if (i == 0) {
+            i = o2.compareTo(o1);
+            if (i == 0) {
+                i = System.identityHashCode(o2) - System.identityHashCode(o1);
+            }
+        }
+        return reverse ? -i : i;
     }
-
 }

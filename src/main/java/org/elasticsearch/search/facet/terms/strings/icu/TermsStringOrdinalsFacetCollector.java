@@ -32,13 +32,12 @@ import org.elasticsearch.index.field.data.strings.StringFieldData;
 import org.elasticsearch.index.mapper.MapperService;
 import org.elasticsearch.search.facet.AbstractFacetCollector;
 import org.elasticsearch.search.facet.Facet;
-import org.elasticsearch.search.facet.icu.ICUTermsFacet;
+import org.elasticsearch.search.facet.terms.comparator.icu.TermsFacetComparator;
 import org.elasticsearch.search.internal.SearchContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,9 +51,7 @@ public class TermsStringOrdinalsFacetCollector extends AbstractFacetCollector {
 
     private final String indexFieldName;
 
-    private final String locale;
-    
-    private final Comparator<ICUTermsFacet.Entry> comparator;
+    private final TermsFacetComparator comparator;
 
     private final int size;
 
@@ -77,12 +74,11 @@ public class TermsStringOrdinalsFacetCollector extends AbstractFacetCollector {
 
     private final Matcher matcher;
 
-    public TermsStringOrdinalsFacetCollector(String facetName, String fieldName, int size, String locale, Comparator<ICUTermsFacet.Entry> comparator, boolean allTerms, SearchContext context,
+    public TermsStringOrdinalsFacetCollector(String facetName, String fieldName, int size, TermsFacetComparator comparator, boolean allTerms, SearchContext context,
                                              ImmutableSet<String> excluded, Pattern pattern) {
         super(facetName);
         this.fieldDataCache = context.fieldDataCache();
         this.size = size;
-        this.locale = locale;
         this.comparator = comparator;
         this.numberOfShards = context.numberOfShards();
 
@@ -196,7 +192,7 @@ public class TermsStringOrdinalsFacetCollector extends AbstractFacetCollector {
                 CacheRecycler.pushIntArray(aggregator.counts);
             }
 
-            return new InternalStringTermsFacet(facetName, locale, comparator, size, Arrays.asList(list), missing, total);
+            return new InternalStringTermsFacet(facetName, comparator, size, Arrays.asList(list), missing, total);
         }
 
         BoundedTreeSet<InternalStringTermsFacet.StringEntry> ordered = new BoundedTreeSet<InternalStringTermsFacet.StringEntry>(comparator, size);
@@ -233,7 +229,7 @@ public class TermsStringOrdinalsFacetCollector extends AbstractFacetCollector {
             CacheRecycler.pushIntArray(aggregator.counts);
         }
 
-        return new InternalStringTermsFacet(facetName, locale, comparator, size, ordered, missing, total);
+        return new InternalStringTermsFacet(facetName, comparator, size, ordered, missing, total);
     }
 
     public static class ReaderAggregator implements FieldData.OrdinalInDocProc {

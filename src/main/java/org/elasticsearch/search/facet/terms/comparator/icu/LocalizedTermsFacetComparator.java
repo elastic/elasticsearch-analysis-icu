@@ -17,25 +17,23 @@
  * under the License.
  */
 
-package org.elasticsearch.search.facet.terms.strings.icu;
+package org.elasticsearch.search.facet.terms.comparator.icu;
 
-import org.apache.lucene.util.PriorityQueue;
-import org.elasticsearch.search.facet.icu.TermsFacet;
-import org.elasticsearch.search.facet.terms.comparator.icu.TermsFacetComparator;
+import com.ibm.icu.text.Collator;
+import com.ibm.icu.util.ULocale;
 
-public class EntryPriorityQueue extends PriorityQueue<TermsFacet.Entry> {
-
-    public static final int LIMIT = 5000;
-
-    private final TermsFacetComparator comparator;
-
-    public EntryPriorityQueue(int size, TermsFacetComparator comparator) {
-        initialize(size);
-        this.comparator = comparator;
+/**
+ * A localized terms facet entry comparator.
+ * For convenience usage from API.
+ * 
+ * @author joerg
+ */
+public class LocalizedTermsFacetComparator extends TermsFacetCollationComparator {
+    
+    public LocalizedTermsFacetComparator(ULocale locale, boolean reverse) {
+        super(reverse ? "reverse_term" : "term", reverse);
+        setLocale(locale);
+        setCollator(Collator.getInstance(locale));
     }
-
-    @Override
-    protected boolean lessThan(TermsFacet.Entry a, TermsFacet.Entry b) {
-        return comparator.compare(a, b) > 0; // reverse, since we reverse again when adding to a list
-    }
+   
 }

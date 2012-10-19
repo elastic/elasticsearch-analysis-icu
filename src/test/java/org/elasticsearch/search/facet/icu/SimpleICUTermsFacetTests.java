@@ -31,11 +31,11 @@ public class SimpleICUTermsFacetTests extends AbstractNodesTests {
     }
 
     protected int numberOfShards() {
-        return 1;
+        return 2;
     }
 
     protected int numberOfNodes() {
-        return 1;
+        return 2;
     }
 
     protected int numberOfRuns() {
@@ -93,9 +93,9 @@ public class SimpleICUTermsFacetTests extends AbstractNodesTests {
 
             logger.info(searchResponse.toString());
             assertThat(searchResponse.hits().totalHits(), equalTo(5l));
-            ICUTermsFacet facet = searchResponse.facets().facet("facet1");
+            TermsFacet facet = searchResponse.facets().facet("facet1");
             assertThat(facet.name(), equalTo("facet1"));
-            List<? extends ICUTermsFacet.Entry> facetResult = facet.entries();
+            List<? extends TermsFacet.Entry> facetResult = facet.entries();
             assertThat(facetResult.size(), equalTo(5));
             assertThat(facetResult.get(0).getTerm(), equalTo("göbel"));
             assertThat(facetResult.get(1).getTerm(), equalTo("goethe"));

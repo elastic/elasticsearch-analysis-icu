@@ -20,6 +20,8 @@
 package org.elasticsearch.search.facet.icu;
 
 import com.ibm.icu.util.ULocale;
+import com.ibm.icu.text.Collator;
+
 import org.elasticsearch.common.collect.ImmutableSet;
 import org.elasticsearch.common.collect.Lists;
 import org.elasticsearch.common.component.AbstractComponent;
@@ -32,15 +34,16 @@ import org.elasticsearch.index.mapper.FieldMapper;
 import org.elasticsearch.search.facet.Facet;
 import org.elasticsearch.search.facet.FacetCollector;
 import org.elasticsearch.search.facet.FacetProcessor;
+import org.elasticsearch.search.facet.terms.comparator.icu.AbstractTermsFacetComparator;
+import org.elasticsearch.search.facet.terms.comparator.icu.TermsFacetComparator;
+import org.elasticsearch.search.facet.terms.comparator.icu.TermsFacetCountComparator;
 import org.elasticsearch.search.facet.terms.strings.icu.FieldsTermsStringFacetCollector;
 import org.elasticsearch.search.facet.terms.strings.icu.ScriptTermsStringFieldFacetCollector;
 import org.elasticsearch.search.facet.terms.strings.icu.TermsStringFacetCollector;
 import org.elasticsearch.search.facet.terms.strings.icu.TermsStringOrdinalsFacetCollector;
 import org.elasticsearch.search.internal.SearchContext;
-import org.elasticsearch.search.facet.icu.ICUTermsFacet.Entry;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -48,17 +51,19 @@ import java.util.regex.Pattern;
 /**
  *
  */
-public class ICUTermsFacetProcessor extends AbstractComponent implements FacetProcessor {
+public class TermsFacetProcessor extends AbstractComponent implements FacetProcessor {
 
+   private final static TermsFacetComparator DEFAULT_COMPARATOR = new TermsFacetCountComparator("count", false).setLocale(ULocale.getDefault());
+    
     @Inject
-    public ICUTermsFacetProcessor(Settings settings) {
+    public TermsFacetProcessor(Settings settings) {
         super(settings);
-        ICUInternalTermsFacet.registerStreams();
+        InternalTermsFacet.registerStreams();
     }
 
     @Override
     public String[] types() {
-        return new String[]{ICUTermsFacet.TYPE};
+        return new String[]{TermsFacet.TYPE};
     }
 
     @Override
@@ -70,8 +75,12 @@ public class ICUTermsFacetProcessor extends AbstractComponent implements FacetPr
         ImmutableSet<String> excluded = ImmutableSet.of();
         String regex = null;
         String regexFlags = null;
-        ULocale locale = ULocale.getDefault();
-        Comparator<Entry> comparator = ICUTermsFacetComparator.COUNT;
+        TermsFacetComparator comparator = DEFAULT_COMPARATOR;
+        ULocale locale = DEFAULT_COMPARATOR.getLocale();
+        int strength = -1;
+        int decomp = -1;
+        String rules = null;
+        boolean reverse = false;
         String scriptLang = null;
         String script = null;
         Map<String, Object> params = null;
@@ -115,8 +124,7 @@ public class ICUTermsFacetProcessor extends AbstractComponent implements FacetPr
                 } else if ("regex_flags".equals(currentFieldName) || "regexFlags".equals(currentFieldName)) {
                     regexFlags = parser.text();
                 } else if ("order".equals(currentFieldName) || "comparator".equals(currentFieldName)) {
-                    comparator = ICUTermsFacetComparator.fromString(parser.text(), locale);
-                    logger.debug("comparator type = " + parser.text() + " locale = " + locale.getName());
+                    comparator = AbstractTermsFacetComparator.getInstance(parser.text(), reverse, locale, rules, decomp, strength);
                 } else if ("script".equals(currentFieldName)) {
                     script = parser.text();
                 } else if ("lang".equals(currentFieldName)) {
@@ -125,6 +133,28 @@ public class ICUTermsFacetProcessor extends AbstractComponent implements FacetPr
                     executionHint = parser.textOrNull();
                 } else if ("locale".equals(currentFieldName)) {
                     locale = new ULocale(parser.text());
+                } else if ("rules".equals(currentFieldName)) {
+                    rules = parser.text();
+                } else if ("decomp".equals(currentFieldName)) {
+                    String s = parser.text();
+                    if ("NO_DECOMPOSITION".equals(s)) {
+                        decomp = Collator.NO_DECOMPOSITION;
+                    } else if ("CANONICAL_DECOMPOSITION".equals(s)) {
+                        decomp = Collator.CANONICAL_DECOMPOSITION;
+                    } else if ("FULL_DECOMPOSITION".equals(s)) {
+                        decomp = Collator.FULL_DECOMPOSITION;
+                    }
+                } else if ("strength".equals(currentFieldName)) {
+                    String s = parser.text();
+                    if ("IDENTICAL".equals(s)) {
+                        strength = Collator.IDENTICAL;
+                    } else if ("PRIMARY".equals(s)) {
+                        strength = Collator.PRIMARY;
+                    } else if ("SECONDARY".equals(s)) {
+                         strength = Collator.SECONDARY;
+                    } else if ("TERTIARY".equals(s)) {
+                         strength = Collator.TERTIARY;
+                    }
                 }
             }
         }
@@ -134,26 +164,26 @@ public class ICUTermsFacetProcessor extends AbstractComponent implements FacetPr
             pattern = Regex.compile(regex, regexFlags);
         }
         if (fieldsNames != null) {
-            return new FieldsTermsStringFacetCollector(facetName, fieldsNames, size, locale.getName(), comparator, allTerms, context, excluded, pattern, scriptLang, script, params);
+            return new FieldsTermsStringFacetCollector(facetName, fieldsNames, size, comparator, allTerms, context, excluded, pattern, scriptLang, script, params);
         }
         if (field == null && fieldsNames == null && script != null) {
-            return new ScriptTermsStringFieldFacetCollector(facetName, size, locale.getName(), comparator, context, excluded, pattern, scriptLang, script, params);
+            return new ScriptTermsStringFieldFacetCollector(facetName, size, comparator, context, excluded, pattern, scriptLang, script, params);
         }
 
         FieldMapper fieldMapper = context.smartNameFieldMapper(field);
         if (fieldMapper != null) {
             if (fieldMapper.fieldDataType() == FieldDataType.DefaultTypes.STRING) {
                 if (script == null && !"map".equals(executionHint)) {
-                    return new TermsStringOrdinalsFacetCollector(facetName, field, size, locale.getName(), comparator, allTerms, context, excluded, pattern);
+                    return new TermsStringOrdinalsFacetCollector(facetName, field, size, comparator, allTerms, context, excluded, pattern);
                 }
             }
         }
-        return new TermsStringFacetCollector(facetName, field, size, locale.getName(), comparator, allTerms, context, excluded, pattern, scriptLang, script, params);
+        return new TermsStringFacetCollector(facetName, field, size, comparator, allTerms, context, excluded, pattern, scriptLang, script, params);
     }
 
     @Override
     public Facet reduce(String name, List<Facet> facets) {
-        ICUInternalTermsFacet first = (ICUInternalTermsFacet) facets.get(0);
+        InternalTermsFacet first = (InternalTermsFacet) facets.get(0);
         return first.reduce(name, facets);
     }
 }

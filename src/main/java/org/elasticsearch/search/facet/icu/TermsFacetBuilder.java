@@ -24,6 +24,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilderException;
 import org.elasticsearch.search.facet.AbstractFacetBuilder;
+import org.elasticsearch.search.facet.terms.comparator.icu.TermsFacetComparator;
 
 import java.io.IOException;
 import java.util.Map;
@@ -33,7 +34,7 @@ import java.util.Map;
  *
  *
  */
-public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
+public class TermsFacetBuilder extends AbstractFacetBuilder {
 
     private String fieldName;
     private String[] fieldsNames;
@@ -43,7 +44,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
     private String regex;
     private int regexFlags = 0;
     private String locale;
-    private ICUTermsFacetComparator comparator;
+    private TermsFacetComparator comparator;
     private String script;
     private String lang;
     private Map<String, Object> params;
@@ -54,7 +55,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
      *
      * @param name The facet name.
      */
-    public ICUTermsFacetBuilder(String name) {
+    public TermsFacetBuilder(String name) {
         super(name);
     }
 
@@ -63,7 +64,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
      * not. Defaults to <tt>false</tt>.
      */
     @Override
-    public ICUTermsFacetBuilder global(boolean global) {
+    public TermsFacetBuilder global(boolean global) {
         super.global(global);
         return this;
     }
@@ -72,7 +73,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
      * Marks the facet to run in a specific scope.
      */
     @Override
-    public ICUTermsFacetBuilder scope(String scope) {
+    public TermsFacetBuilder scope(String scope) {
         super.scope(scope);
         return this;
     }
@@ -82,7 +83,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
      * facet will be executed on.
      */
     @Override
-    public ICUTermsFacetBuilder facetFilter(FilterBuilder filter) {
+    public TermsFacetBuilder facetFilter(FilterBuilder filter) {
         this.facetFilter = filter;
         return this;
     }
@@ -93,7 +94,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
      * into the facet.
      */
     @Override
-    public ICUTermsFacetBuilder nested(String nested) {
+    public TermsFacetBuilder nested(String nested) {
         this.nested = nested;
         return this;
     }
@@ -101,7 +102,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
     /**
      * The field the terms will be collected from.
      */
-    public ICUTermsFacetBuilder field(String field) {
+    public TermsFacetBuilder field(String field) {
         this.fieldName = field;
         return this;
     }
@@ -109,7 +110,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
     /**
      * The fields the terms will be collected from.
      */
-    public ICUTermsFacetBuilder fields(String... fields) {
+    public TermsFacetBuilder fields(String... fields) {
         this.fieldsNames = fields;
         return this;
     }
@@ -119,7 +120,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
      * not filtered, as is the case when the script is provided on top of field
      * / fields).
      */
-    public ICUTermsFacetBuilder scriptField(String scriptField) {
+    public TermsFacetBuilder scriptField(String scriptField) {
         this.script = scriptField;
         return this;
     }
@@ -127,7 +128,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
     /**
      * A set of terms that will be excluded.
      */
-    public ICUTermsFacetBuilder exclude(Object... exclude) {
+    public TermsFacetBuilder exclude(Object... exclude) {
         this.exclude = exclude;
         return this;
     }
@@ -135,7 +136,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
     /**
      * The number of terms (and frequencies) to return. Defaults to 10.
      */
-    public ICUTermsFacetBuilder size(int size) {
+    public TermsFacetBuilder size(int size) {
         this.size = size;
         return this;
     }
@@ -143,7 +144,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
     /**
      * A regular expression to use in order to further filter terms.
      */
-    public ICUTermsFacetBuilder regex(String regex) {
+    public TermsFacetBuilder regex(String regex) {
         return regex(regex, 0);
     }
 
@@ -151,7 +152,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
      * A regular expression (with flags) to use in order to further filter
      * terms.
      */
-    public ICUTermsFacetBuilder regex(String regex, int flags) {
+    public TermsFacetBuilder regex(String regex, int flags) {
         this.regex = regex;
         this.regexFlags = flags;
         return this;
@@ -160,7 +161,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
     /**
      * The order by which to return the facets by.
      */
-    public ICUTermsFacetBuilder order(ICUTermsFacetComparator comparator) {
+    public TermsFacetBuilder order(TermsFacetComparator comparator) {
         this.comparator = comparator;
         return this;
     }
@@ -169,7 +170,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
      * A script allowing to either modify or ignore a provided term (can be
      * accessed using <tt>term</tt> var).
      */
-    public ICUTermsFacetBuilder script(String script) {
+    public TermsFacetBuilder script(String script) {
         this.script = script;
         return this;
     }
@@ -177,7 +178,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
     /**
      * The language of the script.
      */
-    public ICUTermsFacetBuilder lang(String lang) {
+    public TermsFacetBuilder lang(String lang) {
         this.lang = lang;
         return this;
     }
@@ -185,12 +186,12 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
     /**
      * An execution hint to how the facet is computed.
      */
-    public ICUTermsFacetBuilder executionHint(String executionHint) {
+    public TermsFacetBuilder executionHint(String executionHint) {
         this.executionHint = executionHint;
         return this;
     }
 
-    public ICUTermsFacetBuilder locale(String locale) {
+    public TermsFacetBuilder locale(String locale) {
         this.locale = locale;
         return this;
     }
@@ -201,7 +202,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
      * @param name The name of the script parameter.
      * @param value The value of the script parameter.
      */
-    public ICUTermsFacetBuilder param(String name, Object value) {
+    public TermsFacetBuilder param(String name, Object value) {
         if (params == null) {
             params = Maps.newHashMap();
         }
@@ -213,7 +214,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
      * Sets all possible terms to be loaded, even ones with 0 count. Note, this
      * *should not* be used with a field that has many possible terms.
      */
-    public ICUTermsFacetBuilder allTerms(boolean allTerms) {
+    public TermsFacetBuilder allTerms(boolean allTerms) {
         this.allTerms = allTerms;
         return this;
     }
@@ -225,7 +226,7 @@ public class ICUTermsFacetBuilder extends AbstractFacetBuilder {
         }
         builder.startObject(name);
 
-        builder.startObject(ICUTermsFacet.TYPE);
+        builder.startObject(TermsFacet.TYPE);
         if (fieldsNames != null) {
             if (fieldsNames.length == 1) {
                 builder.field("field", fieldsNames[0]);

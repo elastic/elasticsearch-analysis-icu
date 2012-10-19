@@ -28,7 +28,7 @@ import java.util.List;
 /**
  *
  */
-public abstract class ICUInternalTermsFacet implements ICUTermsFacet, InternalFacet {
+public abstract class InternalTermsFacet implements TermsFacet, InternalFacet {
 
     public static void registerStreams() {
         InternalStringTermsFacet.registerStream();

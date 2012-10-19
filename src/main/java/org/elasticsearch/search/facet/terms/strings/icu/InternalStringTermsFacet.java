@@ -20,6 +20,7 @@
 package org.elasticsearch.search.facet.terms.strings.icu;
 
 import org.elasticsearch.common.collect.ImmutableList;
+import com.ibm.icu.util.ULocale;
 import org.elasticsearch.common.trove.iterator.TObjectIntIterator;
 import org.elasticsearch.common.trove.map.hash.TObjectIntHashMap;
 import org.elasticsearch.common.CacheRecycler;
@@ -29,8 +30,10 @@ import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentBuilderString;
 import org.elasticsearch.search.facet.Facet;
-import org.elasticsearch.search.facet.icu.ICUTermsFacet;
-import org.elasticsearch.search.facet.icu.ICUTermsFacetComparator;
+import org.elasticsearch.search.facet.icu.TermsFacet;
+import org.elasticsearch.search.facet.icu.InternalTermsFacet;
+import org.elasticsearch.search.facet.terms.comparator.icu.AbstractTermsFacetComparator;
+import org.elasticsearch.search.facet.terms.comparator.icu.TermsFacetComparator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,12 +41,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import org.elasticsearch.search.facet.icu.ICUInternalTermsFacet;
 
 /**
  *
  */
-public class InternalStringTermsFacet extends ICUInternalTermsFacet {
+public class InternalStringTermsFacet extends InternalTermsFacet {
 
     private static final String STREAM_TYPE = "tTerms";
 
@@ -108,8 +110,6 @@ public class InternalStringTermsFacet extends ICUInternalTermsFacet {
 
     private String name;
     
-    private String locale;
-
     int requiredSize;
 
     long missing;
@@ -118,14 +118,13 @@ public class InternalStringTermsFacet extends ICUInternalTermsFacet {
 
     Collection<StringEntry> entries = ImmutableList.of();
 
-    Comparator<ICUTermsFacet.Entry> comparator;
+    TermsFacetComparator comparator;
 
     InternalStringTermsFacet() {
     }
 
-    public InternalStringTermsFacet(String name, String locale, Comparator<ICUTermsFacet.Entry> comparator, int requiredSize, Collection<StringEntry> entries, long missing, long total) {
+    public InternalStringTermsFacet(String name, TermsFacetComparator comparator, int requiredSize, Collection<StringEntry> entries, long missing, long total) {
         this.name = name;
-        this.locale = locale;
         this.comparator = comparator;
         this.requiredSize = requiredSize;
         this.entries = entries;
@@ -206,7 +205,7 @@ public class InternalStringTermsFacet extends ICUInternalTermsFacet {
         return otherCount();
     }
 
-    public Comparator<ICUTermsFacet.Entry> comparator() {
+    public Comparator<TermsFacet.Entry> comparator() {
         return comparator;
     }
     
@@ -255,7 +254,7 @@ public class InternalStringTermsFacet extends ICUInternalTermsFacet {
     @Override
     public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
         builder.startObject(name);
-        builder.field(Fields._TYPE, ICUTermsFacet.TYPE);
+        builder.field(Fields._TYPE, TermsFacet.TYPE);
         builder.field(Fields.MISSING, missing);
         builder.field(Fields.TOTAL, total);
         builder.field(Fields.OTHER, otherCount());
@@ -280,8 +279,13 @@ public class InternalStringTermsFacet extends ICUInternalTermsFacet {
     @Override
     public void readFrom(StreamInput in) throws IOException {
         name = in.readUTF();
-        locale = in.readUTF();
-        comparator = ICUTermsFacetComparator.fromString(name, locale);
+        String type = in.readUTF();
+        boolean reverse = in.readBoolean();
+        ULocale locale =  new ULocale(in.readUTF());
+        String rules = in.readOptionalUTF();
+        int decomp = in.readInt();
+        int strength = in.readInt();
+        comparator = AbstractTermsFacetComparator.getInstance(type, reverse, locale, rules, decomp, strength);
         requiredSize = in.readVInt();
         missing = in.readVLong();
         total = in.readVLong();
@@ -296,7 +300,12 @@ public class InternalStringTermsFacet extends ICUInternalTermsFacet {
     @Override
     public void writeTo(StreamOutput out) throws IOException {
         out.writeUTF(name);
-        out.writeUTF(locale);
+        out.writeUTF(comparator.getType());
+        out.writeBoolean(comparator.getReverse());
+        out.writeUTF(comparator.getLocale().toString());
+        out.writeOptionalUTF(comparator.getRules());
+        out.writeInt(comparator.getDecomposition());
+        out.writeInt(comparator.getStrength());
         out.writeVInt(requiredSize);
         out.writeVLong(missing);
         out.writeVLong(total);

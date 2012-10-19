@@ -17,25 +17,25 @@
  * under the License.
  */
 
-package org.elasticsearch.search.facet.terms.strings.icu;
+package org.elasticsearch.search.facet.terms.comparator.icu;
 
-import org.apache.lucene.util.PriorityQueue;
-import org.elasticsearch.search.facet.icu.TermsFacet;
-import org.elasticsearch.search.facet.terms.comparator.icu.TermsFacetComparator;
+import org.elasticsearch.search.facet.icu.TermsFacet.Entry;
 
-public class EntryPriorityQueue extends PriorityQueue<TermsFacet.Entry> {
+/**
+ * Collation-unaware terms facet entry comparator.
+ * Deprecated. Use it just for compatibility reasons.
+ * 
+ * @author joerg
+ */
+@Deprecated
+public class SimpleTermsFacetComparator extends AbstractTermsFacetComparator {
 
-    public static final int LIMIT = 5000;
-
-    private final TermsFacetComparator comparator;
-
-    public EntryPriorityQueue(int size, TermsFacetComparator comparator) {
-        initialize(size);
-        this.comparator = comparator;
+    public SimpleTermsFacetComparator(String type, boolean reverse) {
+        super(type, reverse);
     }
-
+    
     @Override
-    protected boolean lessThan(TermsFacet.Entry a, TermsFacet.Entry b) {
-        return comparator.compare(a, b) > 0; // reverse, since we reverse again when adding to a list
+    public int compare(Entry o1, Entry o2) {
+        return reverse ? o2.compareTo(o1) :  o1.compareTo(o2);
     }
 }
