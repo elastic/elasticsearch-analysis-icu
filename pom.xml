@@ -33,7 +33,8 @@
 
     <properties>
         <elasticsearch.version>1.5.0-SNAPSHOT</elasticsearch.version>
-        <lucene.version>4.10.0</lucene.version>
+        <lucene.version>4.10.1</lucene.version>
+        <lucene.maven.version>4.10.1</lucene.maven.version>
         <tests.jvms>1</tests.jvms>
         <tests.shuffle>true</tests.shuffle>
         <tests.output>onerror</tests.output>
@@ -58,7 +59,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-test-framework</artifactId>
-            <version>${lucene.version}</version>
+            <version>${lucene.maven.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -72,7 +73,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-icu</artifactId>
-            <version>${lucene.version}</version>
+            <version>${lucene.maven.version}</version>
             <scope>compile</scope>
         </dependency>
 
