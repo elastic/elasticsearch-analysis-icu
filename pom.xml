@@ -32,7 +32,7 @@
     </parent>
 
     <properties>
-        <elasticsearch.version>1.4.0.Beta-SNAPSHOT</elasticsearch.version>
+        <elasticsearch.version>1.4.0.Beta1</elasticsearch.version>
         <lucene.maven.version>4.10.1</lucene.maven.version>
         <lucene.version>4.10.1</lucene.version>
         <tests.jvms>1</tests.jvms>
@@ -107,8 +107,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                 </configuration>
             </plugin>
             <plugin>
