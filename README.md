@@ -3,7 +3,7 @@ ICU Analysis for Elasticsearch
 
 The ICU Analysis plugin integrates Lucene ICU module into elasticsearch, adding ICU relates analysis components.
 
-## Version 2.5.0 for Elasticsearch: 1.5
+## Version 2.5.1-SNAPSHOT for Elasticsearch: 1.5
 
 If you are looking for another version documentation, please refer to the 
 [compatibility matrix](http://github.com/elasticsearch/elasticsearch-analysis-icu#icu-analysis-for-elasticsearch).
