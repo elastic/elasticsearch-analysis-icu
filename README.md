@@ -236,7 +236,7 @@ ICU Transform
 Transforms are used to process Unicode text in many different ways. Some include case mapping, normalization,
 transliteration and bidirectional text handling.
 
-You can defined transliterator identifiers by using `id` property, and specify direction  to `forward` or `reverse` by
+You can define transliterator identifiers by using `id` property, and specify direction  to `forward` or `reverse` by
 using `dir` property, The default value of both properties are `Null` and `forward`.
 
 For example:
