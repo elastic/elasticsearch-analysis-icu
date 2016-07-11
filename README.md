@@ -2,7 +2,7 @@
 
 From elasticsearch 2.0 you need to look at the following links:
 
-* [Source code](https://github.com/elastic/elasticsearch/tree/master/plugins/analysis-icu).
+* [Source code](https://github.com/elastic/elasticsearch/tree/master/plugins/).
 * [Documentation](https://www.elastic.co/guide/en/elasticsearch/plugins/current/index.html).
 * [Question? Bugs?](https://discuss.elastic.co/c/elasticsearch)
 
